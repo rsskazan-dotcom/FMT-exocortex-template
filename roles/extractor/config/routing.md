@@ -8,15 +8,9 @@
 
 ## 1. Pack-репо по домену
 
-> Добавь свои Pack'и в эту таблицу. Пример:
-
 | Домен | Pack | Префикс | Путь |
 |-------|------|---------|------|
-| _Твой домен (напр. Machine Learning)_ | _PACK-my-domain_ | _MD_ | _{{WORKSPACE_DIR}}/PACK-my-domain/pack/my-domain/_ |
-
-<!-- Удали пример выше и добавь свои Pack'и. Формат:
-| Домен (ключевые слова) | Имя Pack-репо | Короткий префикс (2-3 буквы) | Путь к pack/ директории |
--->
+| Маркетинг B2B | PACK-marketing-b2b | MB2B | /Users/ruslanserazetdinov/Стратег/PACK-marketing-b2b/pack/marketing-b2b/ |
 
 ## 2. Директории по типу знания
 
@@ -68,13 +62,9 @@
 
 ### DS-репо по системам
 
-> Добавь свои DS-репо в эту таблицу. Пример:
-
 | Система | DS-репо | Путь к docs/ |
 |---------|--------|-------------|
-| _Мой бот_ | _your-org/my-bot_ | _{{WORKSPACE_DIR}}/your-org/my-bot/docs/_ |
-
-<!-- Удали пример и добавь свои DS-репо -->
+| Governance-хаб | DS-strategy | /Users/ruslanserazetdinov/Стратег/DS-strategy/docs/ |
 
 ### Директории в DS docs/
 
@@ -110,4 +100,4 @@ DS-кандидаты **не требуют** frontmatter с trust/epistemic_sta
 
 ---
 
-*Последнее обновление: {{сегодняшняя дата}}*
+*Последнее обновление: 2026-05-08*

@@ -52,13 +52,20 @@ if [[ "$MODE" != "settings-json" ]]; then
         fi
 
         # Проверка 2: голое имя авторского governance-репо (без env-var fallback)
-        # Допустимо: ${IWE_GOVERNANCE_REPO:-DS-strategy} или GOV_REPO="${...:-DS-strategy}"
+        # Допустимо:
+        # - shell fallback: ${IWE_GOVERNANCE_REPO:-DS-strategy}
+        # - Python fallback: os.environ.get("GOVERNANCE_REPO", "DS-strategy")
+        # - template/smoke constants used to generate or test the fallback.
         # Запрещено: буквальное имя governance-репо вне fallback-паттерна в исполняемых строках
         # Комментарии (#) пропускаются — документация не влияет на поведение
         if grep -q "$AUTHOR_GOV_REPO" "$f" 2>/dev/null; then
             bad_lines=$(grep -n "$AUTHOR_GOV_REPO" "$f" \
                 | grep -v '^\s*#\|^[0-9]*:\s*#' \
-                | grep -v '\${[^}]*:-' || true)
+                | grep -v '\${[^}]*:-' \
+                | grep -vE 'os\.environ\.get\("[^"]+", "'"$AUTHOR_GOV_REPO"'"\)' \
+                | grep -vE 'GOV_REPO_TMPL="'"$AUTHOR_GOV_REPO"'"' \
+                | grep -vE 'IWE_GOVERNANCE_REPO="'"$AUTHOR_GOV_REPO"'"' \
+                | grep -vE 'e\.g\. '"$AUTHOR_GOV_REPO" || true)
             if [[ -n "$bad_lines" ]]; then
                 echo "  ❌ $fname: '$AUTHOR_GOV_REPO' без env fallback в коде" >&2
                 echo "$bad_lines" | head -3 | sed 's/^/     /' >&2

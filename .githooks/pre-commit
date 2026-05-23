@@ -97,7 +97,8 @@ fi
 STAGED_TEMPLATE=$(git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
     | grep -E '\.(md|sh|py|json|plist|yaml)$' || true)
 if [ -n "$STAGED_TEMPLATE" ] && [ -x "setup/validate-template.sh" ]; then
-    if ! bash setup/validate-template.sh >/tmp/iwe-validate.$$ 2>&1; then
+    REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+    if ! bash setup/validate-template.sh "$REPO_ROOT" >/tmp/iwe-validate.$$ 2>&1; then
         echo "TEMPLATE-VALIDATE: FAIL"
         cat /tmp/iwe-validate.$$
         rm -f /tmp/iwe-validate.$$

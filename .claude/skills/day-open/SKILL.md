@@ -1,8 +1,11 @@
 ---
 name: day-open
-description: "Протокол открытия дня (Day Open). Собирает вчерашние коммиты, issues, заметки, календарь, бота QA, Scout, мир — формирует DayPlan и compact dashboard."
+description: "Day Open protocol. Collects yesterday's commits, issues, notes, calendar, bot QA, Scout, world events — builds DayPlan and compact dashboard."
 argument-hint: ""
 version: 1.1.0
+routing:
+  executor: sonnet
+  deterministic: false
 ---
 
 # Day Open (протокол открытия дня)
@@ -39,6 +42,8 @@ Fallback: файла нет → пропустить, работать из ко
 ### 1b. GitHub Issues
 `gh issue list` по всем репо (включая вложенным). Фильтр 2 дня. Связь с РП по ключевым словам.
 **Только actionable:** пропускать read-only и upstream без push-доступа.
+
+**Critical FMT issues (детектор):** `bash $IWE_SCRIPTS/fmt-critical-alert.sh --no-telegram` — выводит markdown-таблицу открытых issues с label `critical`/`deadline` в FMT-exocortex-template. Если `TG_BOT_TOKEN` и `TG_CHAT_ID` настроены — убрать `--no-telegram` для дублирования в Telegram (MVP detection chain для weekend P0). Источник: peer-session 2026-06-01-18.
 
 ### 1c. Inbox Triage (ежедневный — WP-196 Ф11 п4)
 
@@ -135,8 +140,6 @@ done
 
 ### 5d. Scout
 Scout report. Не проревьюен → «Требует внимания».
-
-**Строка в таблице «IWE за ночь» (шаблон L4):** добавлять только если Scout реально используется: есть свежие отчёты за окно мониторинга или явно включён соответствующий extension/config. Если пайплайн Scout не развёрнут, не вставлять строку вида «Scout | ⚪ | Нет отчётов»; это шум в DayPlan.
 
 ### 6. Мир
 `day-rhythm-config.yaml → news`. Feeds/WebSearch. `enabled: false` → пропустить.

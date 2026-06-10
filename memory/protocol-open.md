@@ -14,23 +14,36 @@ description: "Протокол ОРЗ — пошаговые инструкци�
 ---
 # Протокол Open (ОРЗ-фрактал)
 
-> **Два масштаба:** День и Сессия. Триггер определяет масштаб.
-> **Источник:** CLAUDE.md § 2 (slim) → этот файл.
+> **Два масштаба:** День и Сессия. Триггер определяет масштаб. Источник: CLAUDE.md § 2 (slim).
 
 
 ## § Масштаб: День → skill `/day-open`
 
-> **Триггер:** «открывай» / «открывай день». Полный алгоритм → `.claude/skills/day-open/SKILL.md`.
-> **Исполнение:** пошагово через TodoWrite (каждый шаг = задача, блокирующее). Аналогично Close.
+> **Триггер:** «открывай» / «открывай день» → `.claude/skills/day-open/SKILL.md`. Исполнение: пошагово через TodoWrite (блокирующее).
 
 > **Вчерашний WakaTime (pending-мультипликатор):** в шаге 1 «Вчера» — проверить наличие `day_close` записи за вчера в Neon (`domain_event WHERE event_type='day_close' AND external_id='day-close-{вчера}'`). Если отсутствует: запросить WakaTime API `summaries?start={вчера}&end={вчера}` → пересчитать мультипликатор → дозаписать в domain_event. Причина: `--today` CLI не даёт данных за прошлый день (WP-299 Ф4 п.3).
 
 
 ## § Масштаб: Сессия (Session Open)
 
-> **Триггер:** Любое задание (кроме Day Open/Close).
-> **Роль:** R6 Кодировщик.
-> **Handoff:** WP context file = Human→Agent handoff. «Осталось» = Agent→Agent handoff.
+> **Триггер:** Любое задание (кроме Day Open/Close). **Роль:** R6 Кодировщик. **Handoff:** WP context file = Human→Agent, «осталось» = Agent→Agent.
+
+### Шаг 0. Маршрутизатор (DP.ROLE.059) — перед WP Gate
+
+> **Применять если:** входящий запрос содержит routing-tag (`skill=X`, `/X`, явный executor-hint).
+> **Пропустить (перейти к WP Gate):** свободный текст без явного тега — сначала нужно определить РП.
+
+```bash
+IWE_EXECUTOR_CATALOG={{HOME_DIR}}/IWE/DS-strategy/scripts/executor-catalog.yaml \
+bash {{HOME_DIR}}/IWE/scripts/route-task.sh --skill <skill-name>
+```
+
+**Если тег задан** → Маршрутизатор находит `executor` в executor-catalog.yaml → запускает нужный путь:
+- `executor: script` → прямой вызов script_path (без LLM)
+- `executor: haiku|sonnet|opus` → передать задание нужной модели через SKILL.md
+- `executor: mcp-direct` → вызвать MCP инструмент напрямую
+
+**Если тега нет** → Артефактор (DP.ROLE.058): преобразует сырой запрос в structured request с routing-тегом → возвращает в Маршрутизатор. Триггер Артефактора: запрос расплывчат, нет чёткого скилла, нет РП-привязки.
 
 ### WP Gate (блокирующее)
 
@@ -134,4 +147,3 @@ description: "Протокол ОРЗ — пошаговые инструкци�
 - **Прямая команда:** «запиши замечание: X» → fleeting-notes.md
 
 
-<!-- Шаблоны DayPlan/WeekPlan вынесены в skill /day-open (lazy loading, экономия ~8K токенов) -->

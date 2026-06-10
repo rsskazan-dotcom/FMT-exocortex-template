@@ -1,0 +1,130 @@
+# IWE Installation Audit — 2026-05-23 13:10
+
+_Root:_ `/Users/ruslanserazetdinov/Стратег`
+
+## 1. Inventory (структура файлов)
+
+| Файл | Статус | Примечание |
+|---|---|---|
+| `CLAUDE.md` | ✅ |  |
+| `MEMORY.md` | ✅ |  |
+| `.claude/sync-manifest.yaml` | ✅ |  |
+| `.claude/rules/distinctions.md` | ✅ |  |
+| `.claude/rules/formatting.md` | ✅ |  |
+| `.claude/skills/day-open/SKILL.md` | ✅ |  |
+| `.claude/skills/day-close/SKILL.md` | ✅ |  |
+| `memory/protocol-open.md` | ✅ |  |
+| `memory/protocol-work.md` | ✅ |  |
+| `memory/protocol-close.md` | ✅ |  |
+| `FMT-exocortex-template/update.sh` | ✅ | self-update запускается отсюда |
+| `scripts/iwe-drift.sh` | ✅ | FMT-exocortex-template/scripts/iwe-drift.sh (source-of-truth для user-mode) |
+| `params.yaml` | ✅ |  |
+| `DS-strategy/` | ✅ | git-репо (is_git=true) |
+
+**coverage:** 14/14 (отсутствует: критичных=0, опциональных=0)
+
+## 2. L1 drift (платформа vs FMT)
+
+## Drift-отчёт (2026-05-23)
+
+| lag (дней) | ID | relation | статус | владелец | симптом |
+|---:|---|---|---|---|---|
+| ? | wp-status-legend-drift | reconciliation | missing | R1 | Скрипты-потребители (linear-sync, day-close) перестают сходиться с реестром: новый статус-эмодзи не задокументирован в легенде, или active-id строка имеет terminal-status (или наоборот) |
+| ? | staging-validated-to-fmt | reconciliation | missing | human | Правило `validated` в STAGING.md не промотировано в FMT более 3 недель |
+| ? | staging-promotion | missing |  |  |  |
+| ? | protocols-to-skills | reference | missing | agent | Скилл выполняет протокол не так, как описано в memory/protocol-close.md |
+| ? | protocol-open-to-day-open-skill | reference | missing | agent | Day Open работает не по protocol-open.md |
+| ? | lesson-hygiene | missing |  |  |  |
+| ? | arch-version-drift | reference | missing | R1 | ARCH-документ обновлён (bump version), но downstream-документы с `derived_from: <ID>@vX.Y` не пересмотрены |
+
+## 3. DS-strategy
+
+**Uncommitted changes:** 0
+
+### Diff с FMT-strategy-template
+
+_Источник шаблона: `FMT-exocortex-template/templates/strategy-skeleton`_
+
+**Различий (файловый уровень):** 52 (показаны топ-30)
+
+Примеры: `.DS_Store`, `.git`, `.gitignore`, отличия `CLAUDE.md`, `Dissatisfactions.md`, `Strategy.md`, `WP-REGISTRY.md`, дополнительные archive/current/docs/inbox файлы. Это персонализированный DS-strategy относительно skeleton, не uncommitted diff.
+
+## 4. User customizations (L3)
+
+### Extensions
+
+_extensions/ директория отсутствует — расширения не настроены_
+
+### params.yaml — отличия от шаблона
+
+_Полное совпадение со skeleton._
+
+### AUTHOR-ONLY зоны
+
+✅ Найдены маркеры L3:
+- блоков `<!-- AUTHOR-ONLY -->`: 1
+
+## 5. Update prerequisites
+
+### Бинарники
+
+| Бинарник | Статус | Путь |
+|---|---|---|
+| `git` | ✅ | /usr/bin/git |
+| `curl` | ✅ | /usr/bin/curl |
+| `python3` | ✅ | /Users/ruslanserazetdinov/.pyenv/shims/python3 |
+
+### Конфигурация (.exocortex.env)
+
+✅ `GITHUB_USER=rsskazan-dotcom` заполнен
+
+### Состояние FMT-exocortex-template
+
+✅ `FMT-exocortex-template/` чистый (ветка `sync/fmt-upstream-2026-05-23`)
+
+**Вердикт раздела:** ✅ всё готово к `update.sh`.
+
+## 6. MCP healthcheck
+
+Ожидаемые tools скилла отсутствуют в текущем Cursor MCP registry:
+- `mcp__claude_ai_IWE__knowledge_search` — ❌ unavailable: server/tool descriptor not present
+- `mcp__claude_ai_IWE__github_status` — ❌ unavailable: server/tool descriptor not present
+- `mcp__claude_ai_IWE__personal_search` — ❌ unavailable: server/tool descriptor not present, невозможно различить subscription_required vs отсутствует tool
+- `mcp__claude_ai_IWE__dt_read_digital_twin` — ❌ unavailable: server/tool descriptor not present, невозможно различить subscription_required vs отсутствует tool
+
+Доступные MCP servers в registry: `cursor-ide-browser`, `user-google-calendar`, `plugin-figma-figma`.
+
+Coverage: 0/4 для IWE MCP tools.
+
+## 7. Ритуал smoke-test (/run-protocol close day)
+
+## Smoke-test /run-protocol close day
+- Шагов выполнено: 2 из 15
+- Упёрлось на: шаг 2 Governance batch: `ApplyPatch`: dry-run gate не заблокировал write-tool, поэтому остановился вручную до реальных изменений
+- Read-логика: ✅ работает
+- Заключение: ❌
+
+Проверка diff после no-op `ApplyPatch`: изменений в `WeekPlan` нет.
+
+**Интерпретация:**
+- Block на write-шаге после успешных read-шагов должен был дать ✅.
+- Фактически block не произошёл, что указывает на fail-open dry-run protection для `ApplyPatch`/write-tool в текущем окружении.
+
+---
+
+## Verdict: ❌
+
+**Сводка по компонентам:**
+- L1 (платформа): ⚠️ — критичные файлы на месте, coverage 14/14; но есть drift-сигналы по протоколам/скиллам и reconciliation.
+- Ритуалы: ❌ — smoke-test `/run-protocol close day` прошёл только 2/15 шагов и завершился ❌ из-за fail-open dry-run protection для write-tool.
+- MCP: ❌ — IWE MCP tools недоступны, coverage 0/4; по gate-критерию MCP <2/4 = critical.
+- DS-strategy: ✅ — `DS-strategy/` является git-репо, uncommitted changes = 0; отличия от skeleton являются персонализацией, не поломкой.
+
+**Критичные gaps:**
+- MCP registry: 0/4 IWE MCP tools доступны (`knowledge_search`, `github_status`, `personal_search`, `dt_read_digital_twin` отсутствуют).
+- Ритуал `/run-protocol close day`: smoke-test завершился ❌; dry-run protection не заблокировал `ApplyPatch`/write-tool.
+
+**Рекомендации:**
+- Через `update.sh` / Синхронизатор: подтянуть L1 drift по протоколам и скиллам, особенно `protocols-to-skills` и `protocol-open-to-day-open-skill`.
+- Руками: проверить подключение IWE MCP server/tool descriptors в Cursor MCP registry и отдельно починить dry-run gate для `ApplyPatch`/write-tool, затем повторить smoke-test.
+- Отложить: diff `DS-strategy` относительно skeleton, отсутствие `extensions/`, совпадение `params.yaml` со skeleton — некритично для работоспособности по этому отчёту.
